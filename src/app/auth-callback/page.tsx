@@ -10,21 +10,24 @@ const Page = () => {
   const searchParams = useSearchParams()
   const origin = searchParams.get('origin')
 
-  trpc.authCallback.useQuery(undefined, {
-    onSuccess: ({ success }) => {
-      if (success) {
-        // user is synced to db
-        router.push(origin ? `/${origin}` : '/dashboard')
-      }
-    },
-    onError: (err) => {
-      if (err.data?.code === 'UNAUTHORIZED') {
-        router.push('/sign-in')
-      }
-    },
+  const { data,isLoading, isError, isSuccess } = trpc.authCallback.useQuery(undefined, {
     retry: true,
     retryDelay: 500,
   })
+
+  if (isSuccess) {
+    // User is synced to the database
+    router.push(origin ? `/${origin}` : '/dashboard')
+  }
+
+  if (isError) {
+    // const err = trpc.authCallback.error
+    // if (err.data?.code === 'UNAUTHORIZED') {
+    //   router.push('/sign-in')
+    // }
+    router.push('/sign-in');
+  }
+
 
   return (
     <div className='w-full mt-24 flex justify-center'>
