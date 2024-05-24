@@ -1,10 +1,12 @@
+
 import { db } from '@/db'
 import { openai } from '@/lib/openai'
 import { getPineconeClient } from '@/lib/pinecone'
 import { SendMessageValidator } from '@/lib/validators/SendMessageValidator'
-import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server'
-import { OpenAIEmbeddings } from 'langchain/embeddings/openai'
-import { PineconeStore } from 'langchain/vectorstores/pinecone'
+import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
+
+import { OpenAIEmbeddings } from '@langchain/openai'
+import { PineconeStore } from '@langchain/pinecone'
 import { NextRequest } from 'next/server'
 
 import { OpenAIStream, StreamingTextResponse } from 'ai'
@@ -15,12 +17,13 @@ export const POST = async (req: NextRequest) => {
   const body = await req.json()
 
   const { getUser } = getKindeServerSession()
-  const user = getUser()
+  const user = await getUser()
 
-  const { id: userId } = user
+  if (!user || !user.id) {
+    return new Response('Unauthorized', { status: 401 });
+  }
 
-  if (!userId)
-    return new Response('Unauthorized', { status: 401 })
+  const userId = user.id;
 
   const { fileId, message } =
     SendMessageValidator.parse(body)

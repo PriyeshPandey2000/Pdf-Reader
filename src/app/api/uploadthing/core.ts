@@ -6,8 +6,8 @@ import {
 } from 'uploadthing/next'
 
 import { PDFLoader } from 'langchain/document_loaders/fs/pdf'
-import { OpenAIEmbeddings } from 'langchain/embeddings/openai'
-import { PineconeStore } from 'langchain/vectorstores/pinecone'
+import { OpenAIEmbeddings } from '@langchain/openai'
+import { PineconeStore } from '@langchain/pinecone'
 import { getPineconeClient } from '@/lib/pinecone'
 import { getUserSubscriptionPlan } from '@/lib/stripe'
 import { PLANS } from '@/config/stripe'
@@ -16,7 +16,7 @@ const f = createUploadthing()
 
 const middleware = async () => {
   const { getUser } = getKindeServerSession()
-  const user = getUser()
+  const user = await getUser()
 
   if (!user || !user.id) throw new Error('Unauthorized')
 
