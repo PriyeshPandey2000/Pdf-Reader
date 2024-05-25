@@ -1,5 +1,5 @@
 'use client'
-
+import { useState } from 'react'; 
 import { getUserSubscriptionPlan } from '@/lib/stripe'
 import { useToast } from './ui/use-toast'
 import { trpc } from '@/app/_trpc/client'
@@ -24,21 +24,29 @@ interface BillingFormProps {
 const BillingForm = ({
   subscriptionPlan,
 }: BillingFormProps) => {
-  const { toast } = useToast()
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const { mutate: createStripeSession, isLoading } =
-    trpc.createStripeSession.useMutation({
-      onSuccess: ({ url }) => {
-        if (url) window.location.href = url
-        if (!url) {
-          toast({
-            title: 'There was a problem...',
-            description: 'Please try again in a moment',
-            variant: 'destructive',
-          })
-        }
-      },
-    })
+  const { mutate: createStripeSessionMutation } =
+  trpc.createStripeSession.useMutation();
+  
+  const handleMutate = async () => {
+  setIsLoading(true); // Set loading state to true before mutation
+  try {
+  await createStripeSessionMutation(); // Call the mutation function
+  // If mutation succeeds, redirect
+  window.location.href = 'redirect-url';
+  } catch (error) {
+  console.error('Error creating stripe session:', error);
+  toast({
+  title: 'Error',
+  description: 'An error occurred. Please try again later.',
+  variant: 'destructive',
+  });
+  } finally {
+  setIsLoading(false); // Set loading state to false after mutation
+  }
+  };
 
   return (
     <MaxWidthWrapper className='max-w-5xl'>
@@ -46,7 +54,7 @@ const BillingForm = ({
         className='mt-12'
         onSubmit={(e) => {
           e.preventDefault()
-          createStripeSession()
+          handleMutate()
         }}>
         <Card>
           <CardHeader>

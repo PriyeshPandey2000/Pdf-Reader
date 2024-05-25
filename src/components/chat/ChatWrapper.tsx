@@ -24,11 +24,15 @@ const ChatWrapper = ({
         fileId,
       },
       {
-        refetchInterval: (data) =>
-          data?.status === 'SUCCESS' ||
-          data?.status === 'FAILED'
-            ? false
-            : 500,
+        refetchInterval: (data) =>{
+          const status = data.state.data
+
+          if (status === undefined) {
+              return 500
+          } else {
+              return status.status === 'SUCCESS' || status.status === 'FAILED' ? false : 500
+          }
+      }
       }
     )
 
